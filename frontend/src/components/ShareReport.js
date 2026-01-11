@@ -17,12 +17,14 @@ const ShareReport = () => {
 
     const fetchData = async () => {
       try {
-        const reportsResponse = await axios.get('http://localhost:5000/api/reports', {
+        const backendURL = process.env.REACT_APP_BACKEND_URL; // ✅ use env variable
+
+        const reportsResponse = await axios.get(`${backendURL}/api/reports`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setReports(reportsResponse.data);
 
-        const sharedResponse = await axios.get('http://localhost:5000/api/share/shared-with-me', {
+        const sharedResponse = await axios.get(`${backendURL}/api/share/shared-with-me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSharedReports(sharedResponse.data);
@@ -42,7 +44,8 @@ const ShareReport = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      await axios.post('http://localhost:5000/api/share', shareData, {
+      const backendURL = process.env.REACT_APP_BACKEND_URL; // ✅ use env variable
+      await axios.post(`${backendURL}/api/share`, shareData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Report shared successfully!');

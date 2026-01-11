@@ -35,7 +35,7 @@ const UploadReport = () => {
     data.append('vitals', formData.vitals);
 
     try {
-      await axios.post('http://localhost:5000/api/reports/upload', data, {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/reports/upload`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -45,6 +45,7 @@ const UploadReport = () => {
       navigate('/dashboard');
     } catch (err) {
       setError('Upload failed. Please try again.');
+      console.error(err.response || err); // optional: see backend error
     }
   };
 

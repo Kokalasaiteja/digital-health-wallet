@@ -17,7 +17,8 @@ const ViewReports = () => {
 
     const fetchReports = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/reports', {
+        const backendURL = process.env.REACT_APP_BACKEND_URL; // ✅ use env variable
+        const response = await axios.get(`${backendURL}/api/reports`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setReports(response.data);
@@ -53,7 +54,8 @@ const ViewReports = () => {
   const handleDownload = async (reportId, filename) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get(`http://localhost:5000/api/reports/${reportId}/download`, {
+      const backendURL = process.env.REACT_APP_BACKEND_URL; // ✅ use env variable
+      const response = await axios.get(`${backendURL}/api/reports/${reportId}/download`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });

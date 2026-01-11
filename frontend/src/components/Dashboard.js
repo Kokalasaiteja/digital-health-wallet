@@ -16,12 +16,14 @@ const Dashboard = () => {
 
     const fetchData = async () => {
       try {
-        const reportsResponse = await axios.get('http://localhost:5000/api/reports', {
+        const backendURL = process.env.REACT_APP_BACKEND_URL; // ✅ use environment variable
+
+        const reportsResponse = await axios.get(`${backendURL}/api/reports`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setReports(reportsResponse.data);
 
-        const vitalsResponse = await axios.get('http://localhost:5000/api/vitals', {
+        const vitalsResponse = await axios.get(`${backendURL}/api/vitals`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setVitals(vitalsResponse.data);
