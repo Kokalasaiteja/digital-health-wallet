@@ -7,7 +7,7 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = process.env.NODE_ENV === 'production' ? '/data/uploads' : path.join(__dirname, '../uploads');
+    const uploadPath = path.join(__dirname, '../uploads');
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {

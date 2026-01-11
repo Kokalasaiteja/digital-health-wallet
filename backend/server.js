@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Ensure uploads directory exists
-const uploadsDir = process.env.NODE_ENV === 'production' ? '/data/uploads' : path.join(__dirname, 'uploads');
+const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -29,7 +29,7 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(uploadsDir));
 
 // Database setup
-const dbPath = process.env.NODE_ENV === 'production' ? '/data/health_wallet.db' : path.join(__dirname, '../database/health_wallet.db');
+const dbPath = path.join(__dirname, '../database/health_wallet.db');
 const db = new sqlite3.Database(dbPath);
 
 // Create tables
