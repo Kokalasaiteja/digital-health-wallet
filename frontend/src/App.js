@@ -7,7 +7,7 @@ import UploadReport from './components/UploadReport';
 import ViewReports from './components/ViewReports';
 import Vitals from './components/Vitals';
 import ShareReport from './components/ShareReport';
-import './App.css';
+import './index.css';
 
 function App() {
   return (
