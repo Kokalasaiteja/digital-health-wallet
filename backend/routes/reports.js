@@ -7,7 +7,8 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'));
+    const uploadPath = process.env.NODE_ENV === 'production' ? '/data/uploads' : path.join(__dirname, '../uploads');
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -68,7 +69,7 @@ router.get('/:id/download', verifyToken, (req, res) => {
     if (err) return res.status(500).json({ error: 'Error fetching report' });
     if (!report) return res.status(404).json({ error: 'Report not found' });
 
-    const filePath = path.join(__dirname, '../uploads', report.filename);
+    const filePath = process.env.NODE_ENV === 'production' ? path.join('/data/uploads', report.filename) : path.join(__dirname, '../uploads', report.filename);
     res.download(filePath, report.original_name);
   });
 });
