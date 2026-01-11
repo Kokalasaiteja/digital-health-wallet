@@ -14,10 +14,12 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/auth/register', formData);
+      // Correct axios POST with environment variable
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, formData);
       navigate('/login');
     } catch (err) {
       setError('Registration failed. Please try again.');
+      console.error(err.response || err); // optional: log backend error
     }
   };
 
