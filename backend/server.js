@@ -5,7 +5,6 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-// Import routes
 const authRoutes = require('./routes/auth');
 const reportRoutes = require('./routes/reports');
 const vitalRoutes = require('./routes/vitals');
@@ -14,100 +13,124 @@ const shareRoutes = require('./routes/share');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Uploads directory created at', uploadsDir);
 }
-
-// Serve static files from uploads directory
 app.use('/uploads', express.static(uploadsDir));
 
-// Database setup
-const dbPath = path.join(__dirname, '../database/health_wallet.db');
-const db = new sqlite3.Database(dbPath);
+const dbDir = path.join(__dirname, 'database');
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+  console.log('Database directory created at', dbDir);
+}
 
-// Create tables and insert sample data
+const dbPath = path.join(dbDir, 'healthwallet.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Failed to connect to SQLite DB:', err.message);
+  } else {
+    console.log('Connected to SQLite DB at', dbPath);
+  }
+});
+
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT DEFAULT 'owner'
-  )`);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT DEFAULT 'owner'
+    )
+  `);
 
-  db.run(`CREATE TABLE IF NOT EXISTS reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    filename TEXT NOT NULL,
-    original_name TEXT NOT NULL,
-    report_type TEXT,
-    date TEXT,
-    vitals TEXT,
-    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
-  )`);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      report_type TEXT,
+      date TEXT,
+      vitals TEXT,
+      uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
 
-  db.run(`CREATE TABLE IF NOT EXISTS vitals (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    vital_type TEXT NOT NULL,
-    value REAL NOT NULL,
-    date TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id)
-  )`);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS vitals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      vital_type TEXT NOT NULL,
+      value REAL NOT NULL,
+      date TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
 
-  db.run(`CREATE TABLE IF NOT EXISTS shared_access (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    report_id INTEGER NOT NULL,
-    shared_with_user_id INTEGER NOT NULL,
-    access_type TEXT DEFAULT 'read',
-    shared_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (report_id) REFERENCES reports (id),
-    FOREIGN KEY (shared_with_user_id) REFERENCES users (id)
-  )`);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS shared_access (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      report_id INTEGER NOT NULL,
+      shared_with_user_id INTEGER NOT NULL,
+      access_type TEXT DEFAULT 'read',
+      shared_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (report_id) REFERENCES reports(id),
+      FOREIGN KEY (shared_with_user_id) REFERENCES users(id)
+    )
+  `);
 
-  // Insert sample user
-  db.run(`INSERT OR IGNORE INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`,
-    ['demo_user', 'demo@example.com', '$2a$10$example.hash', 'owner'], function(err) {
+  db.run(`
+    INSERT OR IGNORE INTO users (username, email, password, role)
+    VALUES (?, ?, ?, ?)
+  `, ['demo_user', 'demo@example.com', '$2a$10$example.hash', 'owner'], function(err) {
     if (err) {
-      console.error('Error inserting sample user:', err);
-    } else if (this.changes > 0) {
-      console.log('Sample user inserted');
-      // Insert sample reports for the demo user
-      const userId = this.lastID;
-      db.run(`INSERT OR IGNORE INTO reports (user_id, filename, original_name, report_type, date, vitals) VALUES (?, ?, ?, ?, ?, ?)`,
-        [userId, 'sample_prescription.pdf', 'Sample Prescription.pdf', 'Prescription', '2024-01-15', 'Blood Pressure: 120/80'], function(err) {
-        if (err) {
-          console.error('Error inserting sample report:', err);
-        } else {
-          console.log('Sample report inserted');
-        }
-      });
-
-      // Insert sample vitals
-      db.run(`INSERT OR IGNORE INTO vitals (user_id, vital_type, value, date) VALUES (?, ?, ?, ?)`,
-        [userId, 'Blood Pressure', 120, '2024-01-15'], function(err) {
-        if (err) {
-          console.error('Error inserting sample vital:', err);
-        } else {
-          console.log('Sample vital inserted');
-        }
-      });
+      console.error('Error inserting demo user:', err);
+      return;
     }
+    console.log('Demo user inserted (or exists already)');
+
+    const demoUserId = this.lastID || 1; // fallback if already exists
+
+    db.run(`
+      INSERT OR IGNORE INTO reports (user_id, filename, original_name, report_type, date, vitals)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [
+      demoUserId,
+      'sample_prescription.pdf',
+      'Sample Prescription.pdf',
+      'Prescription',
+      '2024-01-15',
+      'Blood Pressure: 120/80'
+    ], (err) => {
+      if (err) console.error('Error inserting demo report:', err);
+      else console.log('Demo report inserted');
+    });
+
+    db.run(`
+      INSERT OR IGNORE INTO vitals (user_id, vital_type, value, date)
+      VALUES (?, ?, ?, ?)
+    `, [
+      demoUserId,
+      'Blood Pressure',
+      120,
+      '2024-01-15'
+    ], (err) => {
+      if (err) console.error('Error inserting demo vital:', err);
+      else console.log('Demo vital inserted');
+    });
   });
 });
 
-// Make db available to routes
 app.set('db', db);
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/vitals', vitalRoutes);

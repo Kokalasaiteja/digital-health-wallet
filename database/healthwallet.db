@@ -1,0 +1,29 @@
+-- Users table
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT,
+    password TEXT
+);
+
+-- Reports table
+CREATE TABLE reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    type TEXT,
+    date TEXT,
+    vitals TEXT,
+    file_name TEXT
+);
+
+-- Vitals table
+CREATE TABLE vitals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    date TEXT,
+    bp TEXT,
+    sugar TEXT,
+    heart_rate TEXT
+);
+
+.quit
