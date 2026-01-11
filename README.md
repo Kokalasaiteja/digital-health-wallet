@@ -235,33 +235,33 @@ Get reports shared with the user.
 This project is for educational purposes as part of the 2care.ai assessment.
 
 ## Data Structure
-careai_assessment/
-├── backend/
-│   ├── package.json
-│   ├── server.js
-│   └── routes/
-│       ├── auth.js
-│       ├── reports.js
-│       ├── vitals.js
-│       └── share.js
-├── frontend/
-│   ├── package.json
-│   ├── public/
-│   │   └── index.html
-│   └── src/
-│       ├── App.js
-│       ├── index.js
-│       ├── index.css
-│       └── components/
-│           ├── Login.js
-│           ├── Register.js
-│           ├── Dashboard.js
-│           ├── UploadReport.js
-│           ├── ViewReports.js
-│           ├── Vitals.js
-│           └── ShareReport.js
-├── database/
-│   └── (auto-created)
+careai_assessment/ <br>
+├── backend/<br>
+│   ├── package.json <br>
+│   ├── server.js<br>
+│   └── routes/<br>
+│       ├── auth.js<br>
+│       ├── reports.js<br>
+│       ├── vitals.js<br>
+│       └── share.js<br>
+├── frontend/<br>
+│   ├── package.json <br>
+│   ├── public/ <br>
+│   │   └── index.html <br>
+│   └── src/ <br>
+│       ├── App.js <br>
+│       ├── index.js<br>
+│       ├── index.css <br>
+│       └── components/ <br>
+│           ├── Login.js <br>
+│           ├── Register.js <br>
+│           ├── Dashboard.js <br>
+│           ├── UploadReport.js <br>
+│           ├── ViewReports.js<br>
+│           ├── Vitals.js<br>
+│           └── ShareReport.js <br>
+├── database/<br>
+│   └── (auto-created) <br>
 ├── README.md
 └── uploads/
     └── (auto-created)
