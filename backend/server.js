@@ -32,7 +32,7 @@ app.use('/uploads', express.static(uploadsDir));
 const dbPath = path.join(__dirname, '../database/health_wallet.db');
 const db = new sqlite3.Database(dbPath);
 
-// Create tables
+// Create tables and insert sample data
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,6 +72,36 @@ db.serialize(() => {
     FOREIGN KEY (report_id) REFERENCES reports (id),
     FOREIGN KEY (shared_with_user_id) REFERENCES users (id)
   )`);
+
+  // Insert sample user
+  db.run(`INSERT OR IGNORE INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`,
+    ['demo_user', 'demo@example.com', '$2a$10$example.hash', 'owner'], function(err) {
+    if (err) {
+      console.error('Error inserting sample user:', err);
+    } else if (this.changes > 0) {
+      console.log('Sample user inserted');
+      // Insert sample reports for the demo user
+      const userId = this.lastID;
+      db.run(`INSERT OR IGNORE INTO reports (user_id, filename, original_name, report_type, date, vitals) VALUES (?, ?, ?, ?, ?, ?)`,
+        [userId, 'sample_prescription.pdf', 'Sample Prescription.pdf', 'Prescription', '2024-01-15', 'Blood Pressure: 120/80'], function(err) {
+        if (err) {
+          console.error('Error inserting sample report:', err);
+        } else {
+          console.log('Sample report inserted');
+        }
+      });
+
+      // Insert sample vitals
+      db.run(`INSERT OR IGNORE INTO vitals (user_id, vital_type, value, date) VALUES (?, ?, ?, ?)`,
+        [userId, 'Blood Pressure', 120, '2024-01-15'], function(err) {
+        if (err) {
+          console.error('Error inserting sample vital:', err);
+        } else {
+          console.log('Sample vital inserted');
+        }
+      });
+    }
+  });
 });
 
 // Make db available to routes

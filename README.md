@@ -111,6 +111,8 @@ A comprehensive health management application that allows users to store, manage
 ### Database
 The SQLite database is automatically created when the backend server starts. The database file is located at `database/health_wallet.db`.
 
+**Important Note:** This project uses SQLite and local uploads. On the free Render tier, files and the database are not persistent across deploys. Data is reset after redeploys. For demo purposes, the workflow (upload, read, filter, share) works perfectly.
+
 ## 📚 API Documentation
 
 ### Authentication Endpoints
