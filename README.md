@@ -262,6 +262,6 @@ careai_assessment/ <br>
 │           └── ShareReport.js <br>
 ├── database/<br>
 │   └── (auto-created) <br>
-├── README.md
-└── uploads/
+├── README.md <br>
+└── uploads/ <br>
     └── (auto-created)
