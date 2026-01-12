@@ -90,7 +90,7 @@ db.serialize(() => {
   db.run(`
     INSERT OR IGNORE INTO users (username, email, password, role)
     VALUES (?, ?, ?, ?)
-  `, ['demo_user', 'demo@example.com', '$2a$10$example.hash', 'owner'], function(err) {
+  `, ['demo_user', 'demo@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'owner'], function(err) {
     if (err) {
       console.error('Error inserting demo user:', err);
       return;
