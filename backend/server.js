@@ -114,17 +114,28 @@ db.serialize(() => {
       else console.log('Demo report inserted');
     });
 
-    db.run(`
-      INSERT OR IGNORE INTO vitals (user_id, vital_type, value, date)
-      VALUES (?, ?, ?, ?)
-    `, [
-      demoUserId,
-      'Blood Pressure',
-      120,
-      '2024-01-15'
-    ], (err) => {
-      if (err) console.error('Error inserting demo vital:', err);
-      else console.log('Demo vital inserted');
+    // Insert multiple demo vitals
+    const demoVitals = [
+      ['Blood Pressure', 120, '2024-01-15'],
+      ['Heart Rate', 72, '2024-01-15'],
+      ['Blood Sugar', 90, '2024-01-15'],
+      ['Weight', 70, '2024-01-15'],
+      ['Temperature', 98.6, '2024-01-15'],
+      ['Blood Pressure', 118, '2024-01-16'],
+      ['Heart Rate', 75, '2024-01-16'],
+      ['Blood Sugar', 95, '2024-01-16'],
+      ['Weight', 70.5, '2024-01-16'],
+      ['Temperature', 98.4, '2024-01-16']
+    ];
+
+    demoVitals.forEach(vital => {
+      db.run(`
+        INSERT OR IGNORE INTO vitals (user_id, vital_type, value, date)
+        VALUES (?, ?, ?, ?)
+      `, [demoUserId, ...vital], (err) => {
+        if (err) console.error('Error inserting demo vital:', err);
+        else console.log(`Demo vital ${vital[0]} inserted`);
+      });
     });
   });
 });
@@ -135,6 +146,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/vitals', vitalRoutes);
 app.use('/api/share', shareRoutes);
+
+// Root route to handle GET /
+app.get('/', (req, res) => {
+  res.json({ message: 'Digital Health Wallet API is running. Please use the frontend application to interact with the API.' });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
