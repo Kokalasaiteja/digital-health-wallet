@@ -1,9 +1,9 @@
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const router = express.Router();
 
 // Share report
-router.post('/', verifyToken, (req, res) => {
+router.post('/', verifyToken, function(req, res) {
   const { report_id, shared_with_email, access_type } = req.body;
   const db = req.app.get('db');
   const userId = req.user.id;
@@ -13,17 +13,17 @@ router.post('/', verifyToken, (req, res) => {
   }
 
   // Check if report belongs to user
-  db.get('SELECT * FROM reports WHERE id = ? AND user_id = ?', [report_id, userId], (err, report) => {
+  db.get('SELECT * FROM reports WHERE id = ? AND user_id = ?', [report_id, userId], function(err, report) {
     if (err) return res.status(500).json({ error: 'Error checking report ownership' });
     if (!report) return res.status(404).json({ error: 'Report not found or not owned by user' });
 
     // Get shared user id
-    db.get('SELECT id FROM users WHERE email = ?', [shared_with_email], (err, user) => {
+    db.get('SELECT id FROM users WHERE email = ?', [shared_with_email], function(err, user) {
       if (err) return res.status(500).json({ error: 'Error finding user' });
       if (!user) return res.status(404).json({ error: 'User not found' });
 
       // Check if already shared
-      db.get('SELECT * FROM shared_access WHERE report_id = ? AND shared_with_user_id = ?', [report_id, user.id], (err, existing) => {
+      db.get('SELECT * FROM shared_access WHERE report_id = ? AND shared_with_user_id = ?', [report_id, user.id], function(err, existing) {
         if (err) return res.status(500).json({ error: 'Error checking existing share' });
         if (existing) return res.status(400).json({ error: 'Report already shared with this user' });
 
