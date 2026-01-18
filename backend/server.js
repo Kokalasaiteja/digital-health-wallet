@@ -32,8 +32,13 @@ const dbDir = process.env.RENDER ? '/opt/render/project/src/database' : path.joi
 app.use('/uploads', express.static(uploadsDir));
 
 // Initialize database
-const db = initializeDatabase(path.join(dbDir, 'healthwallet.db'));
-app.set('db', db);
+initializeDatabase(path.join(dbDir, 'healthwallet.db')).then((db) => {
+  app.set('db', db);
+  console.log('Database initialized successfully');
+}).catch((err) => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

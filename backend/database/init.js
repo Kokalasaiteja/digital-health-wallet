@@ -2,14 +2,45 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 
 function initializeDatabase(dbPath) {
-  const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-      console.error('Failed to connect to SQLite DB:', err.message);
-    } else {
-      console.log('Connected to SQLite DB at', dbPath);
-    }
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Failed to connect to SQLite DB:', err.message);
+        // If database is corrupted, try to recreate it
+        if (err.code === 'SQLITE_NOTADB') {
+          console.log('Database file corrupted, recreating...');
+          const fs = require('fs');
+          try {
+            fs.unlinkSync(dbPath);
+            console.log('Old database file removed');
+            // Create new database
+            const newDb = new sqlite3.Database(dbPath, (newErr) => {
+              if (newErr) {
+                console.error('Failed to create new SQLite DB:', newErr.message);
+                reject(newErr);
+                return;
+              }
+              console.log('New SQLite DB created at', dbPath);
+              // Initialize tables on new database
+              initializeTables(newDb, resolve, reject);
+            });
+          } catch (unlinkErr) {
+            console.error('Error removing corrupted database file:', unlinkErr.message);
+            reject(unlinkErr);
+          }
+        } else {
+          reject(err);
+        }
+      } else {
+        console.log('Connected to SQLite DB at', dbPath);
+        // Initialize tables on existing database
+        initializeTables(db, resolve, reject);
+      }
+    });
   });
+}
 
+function initializeTables(db, resolve, reject) {
   db.serialize(() => {
     // Create tables
     db.run(`
@@ -20,7 +51,13 @@ function initializeDatabase(dbPath) {
         password TEXT NOT NULL,
         role TEXT DEFAULT 'owner'
       )
-    `);
+    `, (err) => {
+      if (err) {
+        console.error('Error creating users table:', err);
+        reject(err);
+        return;
+      }
+    });
 
     db.run(`
       CREATE TABLE IF NOT EXISTS reports (
@@ -34,7 +71,13 @@ function initializeDatabase(dbPath) {
         uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
-    `);
+    `, (err) => {
+      if (err) {
+        console.error('Error creating reports table:', err);
+        reject(err);
+        return;
+      }
+    });
 
     db.run(`
       CREATE TABLE IF NOT EXISTS vitals (
@@ -45,7 +88,13 @@ function initializeDatabase(dbPath) {
         date TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
-    `);
+    `, (err) => {
+      if (err) {
+        console.error('Error creating vitals table:', err);
+        reject(err);
+        return;
+      }
+    });
 
     db.run(`
       CREATE TABLE IF NOT EXISTS shared_access (
@@ -57,13 +106,18 @@ function initializeDatabase(dbPath) {
         FOREIGN KEY (report_id) REFERENCES reports(id),
         FOREIGN KEY (shared_with_user_id) REFERENCES users(id)
       )
-    `);
+    `, (err) => {
+      if (err) {
+        console.error('Error creating shared_access table:', err);
+        reject(err);
+        return;
+      }
 
-    // Insert demo data
-    insertDemoData(db);
+      // Insert demo data
+      insertDemoData(db);
+      resolve(db);
+    });
   });
-
-  return db;
 }
 
 function insertDemoData(db) {
