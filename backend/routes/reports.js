@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const router = express.Router();
 
 // Configure multer for file uploads
@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Upload report
-router.post('/upload', verifyToken, upload.single('file'), (req, res) => {
+router.post('/upload', verifyToken, upload.single('file'), function(req, res) {
   const { report_type, date, vitals } = req.body;
   const db = req.app.get('db');
   const userId = req.user.id;
