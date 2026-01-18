@@ -127,7 +127,7 @@ const Vitals = () => {
         </select>
 
         <input
-          type="number"
+          type="text"
           name="value"
           value={newVital.value}
           onChange={handleNewVitalChange}

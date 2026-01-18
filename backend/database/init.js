@@ -41,7 +41,7 @@ function initializeDatabase(dbPath) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         vital_type TEXT NOT NULL,
-        value REAL NOT NULL,
+        value TEXT NOT NULL,
         date TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id)
       )

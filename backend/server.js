@@ -19,8 +19,8 @@ app.use(bodyParser.json({ limit: '10mb' })); // Add limit for file uploads
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Ensure directories exist
-const uploadsDir = path.join(__dirname, 'uploads');
-const dbDir = path.join(__dirname, 'database');
+const uploadsDir = process.env.NODE_ENV === 'production' ? '/data/uploads' : path.join(__dirname, 'uploads');
+const dbDir = process.env.NODE_ENV === 'production' ? '/data/database' : path.join(__dirname, 'database');
 
 [uploadsDir, dbDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
