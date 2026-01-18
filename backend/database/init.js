@@ -3,40 +3,35 @@ const bcrypt = require('bcryptjs');
 
 function initializeDatabase(dbPath) {
   return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error('Failed to connect to SQLite DB:', err.message);
-        // If database is corrupted, try to recreate it
-        if (err.code === 'SQLITE_NOTADB') {
-          console.log('Database file corrupted, recreating...');
-          const fs = require('fs');
-          try {
-            fs.unlinkSync(dbPath);
-            console.log('Old database file removed');
-            // Create new database
-            const newDb = new sqlite3.Database(dbPath, (newErr) => {
-              if (newErr) {
-                console.error('Failed to create new SQLite DB:', newErr.message);
-                reject(newErr);
-                return;
-              }
-              console.log('New SQLite DB created at', dbPath);
-              // Initialize tables on new database
-              initializeTables(newDb, resolve, reject);
-            });
-          } catch (unlinkErr) {
-            console.error('Error removing corrupted database file:', unlinkErr.message);
-            reject(unlinkErr);
-          }
-        } else {
-          reject(err);
-        }
-      } else {
-        console.log('Connected to SQLite DB at', dbPath);
-        // Initialize tables on existing database
-        initializeTables(db, resolve, reject);
+    // For Render deployments, always start with a fresh database to avoid corruption issues
+    const fs = require('fs');
+
+    if (fs.existsSync(dbPath)) {
+      console.log('Removing existing database file for fresh start...');
+      try {
+        fs.unlinkSync(dbPath);
+        console.log('Existing database file removed');
+      } catch (unlinkErr) {
+        console.error('Error removing existing database file:', unlinkErr.message);
+        // Continue anyway, might still work
       }
-    });
+    }
+
+    // Always create fresh database
+    createFreshDatabase(dbPath, resolve, reject);
+  });
+}
+
+function createFreshDatabase(dbPath, resolve, reject) {
+  console.log('Creating fresh SQLite database at', dbPath);
+  const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+      console.error('Failed to create new SQLite DB:', err.message);
+      reject(err);
+      return;
+    }
+    console.log('New SQLite DB created at', dbPath);
+    initializeTables(db, resolve, reject);
   });
 }
 
